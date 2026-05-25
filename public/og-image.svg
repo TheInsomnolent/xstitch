@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FBF6F0" />
+      <stop offset="55%" stop-color="#F7E4DE" />
+      <stop offset="100%" stop-color="#E9D7E7" />
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F7D9B6" />
+      <stop offset="50%" stop-color="#F4C7CB" />
+      <stop offset="100%" stop-color="#DCCAE6" />
+    </linearGradient>
+    <pattern id="aida" width="28" height="28" patternUnits="userSpaceOnUse">
+      <rect width="28" height="28" fill="none" />
+      <path d="M0 0H28M0 28H28M0 0V28M28 0V28" stroke="rgba(197,138,149,0.18)" stroke-width="1" />
+    </pattern>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="14" />
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <circle cx="180" cy="120" r="200" fill="#F7D9B6" opacity="0.45" filter="url(#soft)" />
+  <circle cx="1060" cy="540" r="220" fill="#DCCAE6" opacity="0.55" filter="url(#soft)" />
+  <rect width="1200" height="630" fill="url(#aida)" />
+
+  <!-- Brand badge -->
+  <g transform="translate(80,80)">
+    <rect width="120" height="120" rx="28" fill="url(#badge)" />
+    <g stroke="#C58A95" stroke-width="9" stroke-linecap="round">
+      <line x1="34" y1="34" x2="86" y2="86" />
+      <line x1="86" y1="34" x2="34" y2="86" />
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="220" y="170" font-family="'Cormorant Garamond', Georgia, serif" font-size="92" font-weight="700" fill="#5b3a45">xstitch</text>
+  <text x="222" y="208" font-family="'Nunito', system-ui, sans-serif" font-size="22" font-weight="500" fill="#9b6b76" letter-spacing="3">CROSS STITCH PATTERN MAKER</text>
+
+  <!-- Headline -->
+  <text x="80" y="330" font-family="'Cormorant Garamond', Georgia, serif" font-size="76" font-weight="600" fill="#3d2932">
+    Turn photos into
+  </text>
+  <text x="80" y="410" font-family="'Cormorant Garamond', Georgia, serif" font-size="76" font-weight="700" fill="#c58a95" font-style="italic">
+    beautiful cross stitch.
+  </text>
+
+  <!-- Feature pills -->
+  <g font-family="'Nunito', system-ui, sans-serif" font-size="24" font-weight="600" fill="#5b3a45">
+    <g transform="translate(80,470)">
+      <rect width="240" height="56" rx="28" fill="rgba(255,255,255,0.75)" stroke="rgba(197,138,149,0.35)" />
+      <text x="32" y="36">DMC thread key</text>
+    </g>
+    <g transform="translate(340,470)">
+      <rect width="240" height="56" rx="28" fill="rgba(255,255,255,0.75)" stroke="rgba(197,138,149,0.35)" />
+      <text x="32" y="36">Half-stitch blend</text>
+    </g>
+    <g transform="translate(600,470)">
+      <rect width="220" height="56" rx="28" fill="rgba(255,255,255,0.75)" stroke="rgba(197,138,149,0.35)" />
+      <text x="32" y="36">Skein estimate</text>
+    </g>
+    <g transform="translate(840,470)">
+      <rect width="280" height="56" rx="28" fill="rgba(255,255,255,0.75)" stroke="rgba(197,138,149,0.35)" />
+      <text x="32" y="36">Offline · installable</text>
+    </g>
+  </g>
+
+  <!-- Decorative stitched mini-grid -->
+  <g transform="translate(820,80)">
+    <rect width="300" height="300" rx="18" fill="rgba(255,255,255,0.6)" stroke="rgba(197,138,149,0.35)" />
+    <g>
+      <rect x="10"  y="10"  width="40" height="40" fill="#f4c7cb" />
+      <rect x="60"  y="10"  width="40" height="40" fill="#e8a6b0" />
+      <rect x="110" y="10"  width="40" height="40" fill="#dccae6" />
+      <rect x="160" y="10"  width="40" height="40" fill="#cde0ee" />
+      <rect x="210" y="10"  width="40" height="40" fill="#c9e3d0" />
+      <rect x="10"  y="60"  width="40" height="40" fill="#f7d9b6" />
+      <rect x="60"  y="60"  width="40" height="40" fill="#e9d8b6" />
+      <rect x="110" y="60"  width="40" height="40" fill="#b89bc6" />
+      <rect x="160" y="60"  width="40" height="40" fill="#c58a95" />
+      <rect x="210" y="60"  width="40" height="40" fill="#f4c7cb" />
+      <rect x="10"  y="110" width="40" height="40" fill="#cde0ee" />
+      <rect x="60"  y="110" width="40" height="40" fill="#c9e3d0" />
+      <rect x="110" y="110" width="40" height="40" fill="#f7d9b6" />
+      <rect x="160" y="110" width="40" height="40" fill="#dccae6" />
+      <rect x="210" y="110" width="40" height="40" fill="#e8a6b0" />
+      <rect x="10"  y="160" width="40" height="40" fill="#b89bc6" />
+      <rect x="60"  y="160" width="40" height="40" fill="#f4c7cb" />
+      <rect x="110" y="160" width="40" height="40" fill="#c9e3d0" />
+      <rect x="160" y="160" width="40" height="40" fill="#f7d9b6" />
+      <rect x="210" y="160" width="40" height="40" fill="#cde0ee" />
+      <rect x="10"  y="210" width="40" height="40" fill="#dccae6" />
+      <rect x="60"  y="210" width="40" height="40" fill="#c58a95" />
+      <rect x="110" y="210" width="40" height="40" fill="#e8a6b0" />
+      <rect x="160" y="210" width="40" height="40" fill="#c9e3d0" />
+      <rect x="210" y="210" width="40" height="40" fill="#b89bc6" />
+    </g>
+    <g stroke="rgba(91,58,69,0.55)" stroke-width="3" stroke-linecap="round">
+      <line x1="14"  y1="14"  x2="46"  y2="46" /> <line x1="46"  y1="14"  x2="14"  y2="46" />
+      <line x1="64"  y1="14"  x2="96"  y2="46" /> <line x1="96"  y1="14"  x2="64"  y2="46" />
+      <line x1="114" y1="14"  x2="146" y2="46" /> <line x1="146" y1="14"  x2="114" y2="46" />
+      <line x1="164" y1="14"  x2="196" y2="46" /> <line x1="196" y1="14"  x2="164" y2="46" />
+      <line x1="214" y1="14"  x2="246" y2="46" /> <line x1="246" y1="14"  x2="214" y2="46" />
+      <line x1="14"  y1="64"  x2="46"  y2="96" /> <line x1="46"  y1="64"  x2="14"  y2="96" />
+      <line x1="64"  y1="64"  x2="96"  y2="96" /> <line x1="96"  y1="64"  x2="64"  y2="96" />
+      <line x1="114" y1="64"  x2="146" y2="96" /> <line x1="146" y1="64"  x2="114" y2="96" />
+      <line x1="164" y1="64"  x2="196" y2="96" /> <line x1="196" y1="64"  x2="164" y2="96" />
+      <line x1="214" y1="64"  x2="246" y2="96" /> <line x1="246" y1="64"  x2="214" y2="96" />
+    </g>
+  </g>
+
+  <!-- URL footer -->
+  <text x="80" y="585" font-family="'Nunito', system-ui, sans-serif" font-size="22" font-weight="600" fill="#9b6b76" letter-spacing="2">
+    theinsomnolent.github.io/xstitch
+  </text>
+</svg>

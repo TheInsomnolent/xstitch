@@ -16,6 +16,17 @@ function isStandalone(): boolean {
   return (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 }
 
+function isMobile(): boolean {
+  if (typeof window === 'undefined') return false;
+  // Treat coarse-pointer / no-hover devices as mobile/tablet.
+  const coarse = window.matchMedia?.('(pointer: coarse)').matches;
+  const noHover = window.matchMedia?.('(hover: none)').matches;
+  if (coarse || noHover) return true;
+  // UA fallback for browsers that fib about pointer media.
+  const ua = navigator.userAgent || '';
+  return /android|iphone|ipad|ipod|mobile|silk|kindle/i.test(ua);
+}
+
 function isIOS(): boolean {
   if (typeof navigator === 'undefined') return false;
   const ua = navigator.userAgent;
@@ -42,6 +53,7 @@ export function InstallPrompt() {
 
   useEffect(() => {
     if (isStandalone()) return;
+    if (!isMobile()) return;
     if (recentlyDismissed()) return;
 
     const onBeforeInstall = (e: Event) => {
