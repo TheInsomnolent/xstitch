@@ -13,9 +13,11 @@ export interface QuantizeInput {
   height: number;
   gridW: number;
   gridH: number;
-  /** number of thread colors to pick (1..30) */
+  /** number of thread colors to pick (1..200) */
   k: number;
   fabricHex: string;
+  /** if false, the palette will only contain full stitches (no half stitches) */
+  useHalfStitches?: boolean;
   seed?: number;
 }
 
@@ -98,6 +100,7 @@ function snapToThreads(centroids: LAB[], palette: ThreadWithLab[]): ThreadWithLa
 
 export function quantize(input: QuantizeInput): QuantizeResult {
   const { pixels, width, height, gridW, gridH, k, fabricHex, seed } = input;
+  const useHalfStitches = input.useHalfStitches !== false;
 
   // 1. Per-cell average colors.
   const cellRgb = averageCells(pixels, width, height, gridW, gridH);
@@ -111,8 +114,8 @@ export function quantize(input: QuantizeInput): QuantizeResult {
   const dmcPalette = getPalette('DMC');
   const threads = snapToThreads(km.centroids, dmcPalette);
 
-  // 4. Expand to 2N effective palette (full + half).
-  const palette = expandPalette(threads, fabricHex);
+  // 4. Expand palette (full + optional half).
+  const palette = expandPalette(threads, fabricHex, useHalfStitches);
 
   // 5. Assign each cell to closest entry in the expanded palette by ΔE76.
   const cells = new Uint8Array(gridW * gridH);

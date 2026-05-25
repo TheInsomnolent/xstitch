@@ -22,6 +22,8 @@ export const ASPECT_RATIOS: AspectRatio[] = [
   { id: 'free', w: 0, h: 0 },
 ];
 
+export type SizeUnit = 'stitches' | 'inches';
+
 export interface WizardState {
   imageDataUrl: string | null;
   imageNaturalW: number;
@@ -29,9 +31,13 @@ export interface WizardState {
   aspect: AspectRatio;
   crop: { x: number; y: number }; // react-easy-crop position
   zoom: number;
+  /** crop frame size in display pixels; only used when aspect.id === 'free' */
+  freeCropSize: { width: number; height: number } | null;
   croppedAreaPixels: { x: number; y: number; width: number; height: number } | null;
   stitchesWide: number;
+  sizeUnit: SizeUnit;
   colorCount: number;
+  useHalfStitches: boolean;
   fabricPreset: FabricPreset;
   fabricCustomHex: string;
   aidaCount: number;
@@ -39,40 +45,31 @@ export interface WizardState {
   name: string;
 }
 
-export const useWizard = create<WizardState & {
-  reset: () => void;
-  set: (partial: Partial<WizardState>) => void;
-}>((set) => ({
+const initialState: WizardState = {
   imageDataUrl: null,
   imageNaturalW: 0,
   imageNaturalH: 0,
   aspect: ASPECT_RATIOS[1], // 4:5
   crop: { x: 0, y: 0 },
   zoom: 1,
+  freeCropSize: null,
   croppedAreaPixels: null,
   stitchesWide: 80,
-  colorCount: 10,
+  sizeUnit: 'stitches',
+  colorCount: 30,
+  useHalfStitches: true,
   fabricPreset: 'white',
   fabricCustomHex: '#FFFFFF',
   aidaCount: 14,
   strands: 2,
   name: '',
-  reset: () =>
-    set({
-      imageDataUrl: null,
-      imageNaturalW: 0,
-      imageNaturalH: 0,
-      aspect: ASPECT_RATIOS[1],
-      crop: { x: 0, y: 0 },
-      zoom: 1,
-      croppedAreaPixels: null,
-      stitchesWide: 80,
-      colorCount: 10,
-      fabricPreset: 'white',
-      fabricCustomHex: '#FFFFFF',
-      aidaCount: 14,
-      strands: 2,
-      name: '',
-    }),
+};
+
+export const useWizard = create<WizardState & {
+  reset: () => void;
+  set: (partial: Partial<WizardState>) => void;
+}>((set) => ({
+  ...initialState,
+  reset: () => set({ ...initialState }),
   set: (partial) => set(partial),
 }));

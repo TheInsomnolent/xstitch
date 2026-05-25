@@ -53,6 +53,49 @@ export function Create() {
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const reqIdRef = useRef(0);
+  const cropAreaRef = useRef<HTMLDivElement | null>(null);
+  const [cropAreaSize, setCropAreaSize] = useState({ width: 0, height: 0 });
+
+  // Track cropper container size so free-mode crop frame can be clamped/init.
+  useEffect(() => {
+    const el = cropAreaRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const r = el.getBoundingClientRect();
+      setCropAreaSize({ width: r.width, height: r.height });
+    });
+    ro.observe(el);
+    const r = el.getBoundingClientRect();
+    setCropAreaSize({ width: r.width, height: r.height });
+    return () => ro.disconnect();
+  }, [w.imageDataUrl]);
+
+  // Initialise / clamp the free-mode crop frame size when entering free mode
+  // or when the container resizes.
+  useEffect(() => {
+    if (w.aspect.id !== 'free') return;
+    if (cropAreaSize.width <= 0 || cropAreaSize.height <= 0) return;
+    const maxW = cropAreaSize.width;
+    const maxH = cropAreaSize.height;
+    if (!w.freeCropSize) {
+      const s = Math.min(maxW, maxH) * 0.85;
+      useWizard.setState({ freeCropSize: { width: s, height: s } });
+      return;
+    }
+    const cw = Math.min(w.freeCropSize.width, maxW);
+    const ch = Math.min(w.freeCropSize.height, maxH);
+    if (cw !== w.freeCropSize.width || ch !== w.freeCropSize.height) {
+      useWizard.setState({ freeCropSize: { width: cw, height: ch } });
+    }
+  }, [w.aspect.id, w.freeCropSize, cropAreaSize.width, cropAreaSize.height]);
+
+  // Reset free crop size when leaving free mode so re-entry re-initialises.
+  useEffect(() => {
+    if (w.aspect.id !== 'free' && w.freeCropSize) {
+      useWizard.setState({ freeCropSize: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [w.aspect.id]);
 
   // create worker once
   useEffect(() => {
@@ -100,7 +143,7 @@ export function Create() {
   const dimensions = useMemo(() => {
     if (!w.croppedAreaPixels) return { gridW: 0, gridH: 0 };
     const ar = w.croppedAreaPixels.width / w.croppedAreaPixels.height;
-    const gridW = Math.max(10, Math.min(400, w.stitchesWide));
+    const gridW = Math.max(10, Math.min(600, w.stitchesWide));
     const gridH = Math.max(10, Math.round(gridW / ar));
     return { gridW, gridH };
   }, [w.croppedAreaPixels, w.stitchesWide]);
@@ -126,6 +169,7 @@ export function Create() {
           gridH: dimensions.gridH,
           k: w.colorCount,
           fabricHex: fabricHex(w.fabricPreset, w.fabricCustomHex),
+          useHalfStitches: w.useHalfStitches,
           seed: 1,
         };
         workerRef.current?.postMessage(req);
@@ -141,6 +185,7 @@ export function Create() {
     dimensions.gridW,
     dimensions.gridH,
     w.colorCount,
+    w.useHalfStitches,
     w.fabricPreset,
     w.fabricCustomHex,
   ]);
@@ -245,18 +290,30 @@ export function Create() {
           <div className="stack gap-3">
             <div className="card stack gap-2">
               <h3>Crop &amp; frame</h3>
-              <div className="crop-area">
+              <div className="crop-area" ref={cropAreaRef}>
                 <Cropper
                   image={w.imageDataUrl}
                   crop={w.crop}
                   zoom={w.zoom}
                   aspect={aspectRatio}
+                  cropSize={
+                    w.aspect.id === 'free' && w.freeCropSize
+                      ? w.freeCropSize
+                      : undefined
+                  }
                   onCropChange={(c) => useWizard.setState({ crop: c })}
                   onZoomChange={(z) => useWizard.setState({ zoom: z })}
                   onCropComplete={(_a, areaPixels) =>
                     useWizard.setState({ croppedAreaPixels: areaPixels })
                   }
                 />
+                {w.aspect.id === 'free' && w.freeCropSize && cropAreaSize.width > 0 && (
+                  <FreeCropHandles
+                    container={cropAreaSize}
+                    size={w.freeCropSize}
+                    onResize={(s) => useWizard.setState({ freeCropSize: s })}
+                  />
+                )}
               </div>
               <div>
                 <div className="field-label">Aspect ratio</div>
@@ -345,18 +402,64 @@ export function Create() {
 
               <div className="field">
                 <label className="field-label">
-                  Stitches wide: <span style={{ color: 'var(--ink)' }}>{w.stitchesWide}</span>
+                  Size:{' '}
+                  <span style={{ color: 'var(--ink)' }}>
+                    {w.sizeUnit === 'inches'
+                      ? `${(w.stitchesWide / w.aidaCount).toFixed(1)}″`
+                      : `${w.stitchesWide} st`}
+                  </span>{' '}
+                  wide
                   {dimensions.gridH > 0 && (
-                    <span className="field-hint"> · {dimensions.gridW}×{dimensions.gridH}</span>
+                    <span className="field-hint">
+                      {' '}· {dimensions.gridW}×{dimensions.gridH} st
+                    </span>
                   )}
                 </label>
-                <input
-                  type="range"
-                  min={20}
-                  max={250}
-                  value={w.stitchesWide}
-                  onChange={(e) => useWizard.setState({ stitchesWide: +e.target.value })}
-                />
+                <div className="seg" role="tablist" aria-label="Size unit" style={{ marginBottom: '0.4rem' }}>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={w.sizeUnit === 'stitches'}
+                    className={'seg-btn' + (w.sizeUnit === 'stitches' ? ' active' : '')}
+                    onClick={() => useWizard.setState({ sizeUnit: 'stitches' })}
+                  >
+                    Stitches
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={w.sizeUnit === 'inches'}
+                    className={'seg-btn' + (w.sizeUnit === 'inches' ? ' active' : '')}
+                    onClick={() => useWizard.setState({ sizeUnit: 'inches' })}
+                  >
+                    Inches
+                  </button>
+                </div>
+                {w.sizeUnit === 'stitches' ? (
+                  <input
+                    type="range"
+                    min={20}
+                    max={400}
+                    value={w.stitchesWide}
+                    onChange={(e) => useWizard.setState({ stitchesWide: +e.target.value })}
+                  />
+                ) : (
+                  <input
+                    type="range"
+                    min={2}
+                    max={30}
+                    step={0.5}
+                    value={+(w.stitchesWide / w.aidaCount).toFixed(2)}
+                    onChange={(e) =>
+                      useWizard.setState({
+                        stitchesWide: Math.max(
+                          10,
+                          Math.round(parseFloat(e.target.value) * w.aidaCount)
+                        ),
+                      })
+                    }
+                  />
+                )}
                 {finishedSize && (
                   <div className="field-hint">
                     Finished size: {finishedSize.wIn.toFixed(1)}″ × {finishedSize.hIn.toFixed(1)}″
@@ -366,16 +469,36 @@ export function Create() {
 
               <div className="field">
                 <label className="field-label">
-                  Thread colors: <span style={{ color: 'var(--ink)' }}>{w.colorCount}</span>{' '}
-                  <span className="field-hint">→ {w.colorCount * 2} effective (with half-stitches)</span>
+                  Thread colors: <span style={{ color: 'var(--ink)' }}>{w.colorCount}</span>
+                  {w.useHalfStitches && (
+                    <span className="field-hint">
+                      {' '}→ {w.colorCount * 2} effective (with half-stitches)
+                    </span>
+                  )}
                 </label>
                 <input
                   type="range"
                   min={2}
-                  max={30}
+                  max={200}
                   value={w.colorCount}
                   onChange={(e) => useWizard.setState({ colorCount: +e.target.value })}
                 />
+              </div>
+
+              <div className="field">
+                <label className="row gap-2" style={{ cursor: 'pointer', alignItems: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={w.useHalfStitches}
+                    onChange={(e) => useWizard.setState({ useHalfStitches: e.target.checked })}
+                  />
+                  <span className="field-label" style={{ margin: 0 }}>
+                    Use half-stitches
+                  </span>
+                </label>
+                <div className="field-hint">
+                  Half-stitches blend a thread with the fabric for softer shading.
+                </div>
               </div>
 
               <div className="field">
@@ -499,3 +622,121 @@ function UploadDropzone({ onFile }: { onFile: (file: File) => void }) {
     </div>
   );
 }
+
+interface FreeCropHandlesProps {
+  container: { width: number; height: number };
+  size: { width: number; height: number };
+  onResize: (s: { width: number; height: number }) => void;
+}
+
+type Corner = 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r';
+
+const MIN_FREE_CROP = 60;
+
+function FreeCropHandles({ container, size, onResize }: FreeCropHandlesProps) {
+  const cx = container.width / 2;
+  const cy = container.height / 2;
+  const halfW = size.width / 2;
+  const halfH = size.height / 2;
+  const startRef = useRef<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    corner: Corner;
+    pointerId: number;
+  } | null>(null);
+
+  const onPointerDown = (corner: Corner) => (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    startRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: size.width,
+      height: size.height,
+      corner,
+      pointerId: e.pointerId,
+    };
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const s = startRef.current;
+    if (!s || s.pointerId !== e.pointerId) return;
+    e.stopPropagation();
+    const dx = e.clientX - s.x;
+    const dy = e.clientY - s.y;
+    // Resize symmetrically about the centre (Cropper centres cropSize).
+    let dw = 0;
+    let dh = 0;
+    switch (s.corner) {
+      case 'tl':
+        dw = -dx * 2;
+        dh = -dy * 2;
+        break;
+      case 'tr':
+        dw = dx * 2;
+        dh = -dy * 2;
+        break;
+      case 'bl':
+        dw = -dx * 2;
+        dh = dy * 2;
+        break;
+      case 'br':
+        dw = dx * 2;
+        dh = dy * 2;
+        break;
+      case 't':
+        dh = -dy * 2;
+        break;
+      case 'b':
+        dh = dy * 2;
+        break;
+      case 'l':
+        dw = -dx * 2;
+        break;
+      case 'r':
+        dw = dx * 2;
+        break;
+    }
+    const width = Math.max(MIN_FREE_CROP, Math.min(container.width, s.width + dw));
+    const height = Math.max(MIN_FREE_CROP, Math.min(container.height, s.height + dh));
+    onResize({ width, height });
+  };
+
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const s = startRef.current;
+    if (!s || s.pointerId !== e.pointerId) return;
+    (e.currentTarget as HTMLDivElement).releasePointerCapture(e.pointerId);
+    startRef.current = null;
+  };
+
+  const handle = (corner: Corner, left: number, top: number, cursor: string) => (
+    <div
+      key={corner}
+      className="crop-handle"
+      data-corner={corner}
+      style={{ left, top, cursor }}
+      onPointerDown={onPointerDown(corner)}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+    />
+  );
+
+  return (
+    <div className="crop-handles" aria-hidden>
+      {handle('tl', cx - halfW, cy - halfH, 'nwse-resize')}
+      {handle('tr', cx + halfW, cy - halfH, 'nesw-resize')}
+      {handle('bl', cx - halfW, cy + halfH, 'nesw-resize')}
+      {handle('br', cx + halfW, cy + halfH, 'nwse-resize')}
+      {handle('t', cx, cy - halfH, 'ns-resize')}
+      {handle('b', cx, cy + halfH, 'ns-resize')}
+      {handle('l', cx - halfW, cy, 'ew-resize')}
+      {handle('r', cx + halfW, cy, 'ew-resize')}
+    </div>
+  );
+}
+
+

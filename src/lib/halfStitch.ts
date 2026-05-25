@@ -23,7 +23,8 @@ export interface EffectivePaletteEntry {
 
 export function expandPalette(
   threads: ThreadWithLab[],
-  fabricHex: string
+  fabricHex: string,
+  includeHalfStitches: boolean = true
 ): EffectivePaletteEntry[] {
   const fabricRgb = hexToRgb(fabricHex);
   const out: EffectivePaletteEntry[] = [];
@@ -38,6 +39,7 @@ export function expandPalette(
       kind: 'full',
       symbol: symbolFor(i),
     });
+    if (!includeHalfStitches) return;
     const halfRgb = blendLinear(t.rgb, fabricRgb, 0.5);
     out.push({
       threadFloss: t.floss,
