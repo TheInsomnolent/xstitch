@@ -1,4 +1,4 @@
-/* xstitch — primitives */
+/* Cozy Cross Stitch — primitives */
 
 /* === Buttons === */
 .btn {
@@ -242,6 +242,7 @@ input[type='range']::-moz-range-thumb {
   text-decoration: none;
   position: relative;
   padding-bottom: 4px;
+  white-space: nowrap;
 }
 .brand::after {
   content: '';
@@ -910,4 +911,54 @@ input[type='range']::-moz-range-thumb {
     width: 100%;
     justify-content: flex-end;
   }
+}
+
+
+/* === Library: create-your-own card === */
+.library-card-create {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  text-decoration: none;
+  color: inherit;
+  border: 1.5px dashed var(--line-strong);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(220, 202, 230, 0.25), transparent 60%),
+    rgba(255, 255, 255, 0.55);
+  min-height: 260px;
+  overflow: hidden;
+  transition: transform 200ms var(--ease, ease), box-shadow 200ms var(--ease, ease), border-color 200ms ease, background 200ms ease;
+}
+.library-card-create:hover {
+  border-color: var(--mauve);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(220, 202, 230, 0.45), transparent 60%),
+    rgba(255, 255, 255, 0.75);
+}
+.library-card-create:focus-visible {
+  outline: 2px solid var(--mauve);
+  outline-offset: 3px;
+}
+.library-create-inner {
+  margin: auto;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.library-create-title {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
+}
+.library-create-text {
+  margin: 0;
+  max-width: 22ch;
+  font-size: 0.9rem;
+}
+.library-create-cta {
+  margin-top: 0.5rem;
 }

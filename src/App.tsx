@@ -10,8 +10,8 @@ function Header() {
   return (
     <header className="app-header">
       <div className="app-header-inner">
-        <Link to="/" className="brand" aria-label="xstitch home">
-          xstitch
+        <Link to="/" className="brand" aria-label="Cozy Cross Stitch home">
+          Cozy Cross Stitch
         </Link>
         <div className="nav-spacer" />
         <nav className="nav">

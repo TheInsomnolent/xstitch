@@ -8,6 +8,8 @@ interface BeforeInstallPromptEvent extends Event {
 
 const DISMISS_KEY = 'xstitch:installPromptDismissedAt';
 const DISMISS_COOLDOWN_MS = 1000 * 60 * 60 * 24 * 14; // 14 days
+const FIRST_SEEN_KEY = 'xstitch:firstSeenAt';
+const MIN_USE_MS = 1000 * 60 * 2; // 2 minutes
 
 function isStandalone(): boolean {
   if (typeof window === 'undefined') return false;
@@ -45,6 +47,24 @@ function recentlyDismissed(): boolean {
   }
 }
 
+/**
+ * Persist the timestamp of the user's first visit and return the milliseconds
+ * remaining before the install prompt becomes eligible to appear.
+ */
+function msUntilEligible(): number {
+  try {
+    const stored = localStorage.getItem(FIRST_SEEN_KEY);
+    let firstSeen = stored ? Number(stored) : NaN;
+    if (!Number.isFinite(firstSeen)) {
+      firstSeen = Date.now();
+      localStorage.setItem(FIRST_SEEN_KEY, String(firstSeen));
+    }
+    return Math.max(0, firstSeen + MIN_USE_MS - Date.now());
+  } catch {
+    return MIN_USE_MS;
+  }
+}
+
 export function InstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [iosHint, setIosHint] = useState(false);
@@ -56,10 +76,32 @@ export function InstallPrompt() {
     if (!isMobile()) return;
     if (recentlyDismissed()) return;
 
+    const delay = msUntilEligible();
+    let eligible = delay === 0;
+    let eligibleTimer: number | undefined;
+    let pendingShow: 'prompt' | 'ios' | null = null;
+
+    const reveal = (kind: 'prompt' | 'ios') => {
+      if (kind === 'ios') setIosHint(true);
+      setVisible(true);
+    };
+
+    const maybeShow = (kind: 'prompt' | 'ios') => {
+      if (eligible) reveal(kind);
+      else pendingShow = pendingShow ?? kind;
+    };
+
+    if (!eligible) {
+      eligibleTimer = window.setTimeout(() => {
+        eligible = true;
+        if (pendingShow) reveal(pendingShow);
+      }, delay);
+    }
+
     const onBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
-      setVisible(true);
+      maybeShow('prompt');
     };
     window.addEventListener('beforeinstallprompt', onBeforeInstall);
 
@@ -69,20 +111,20 @@ export function InstallPrompt() {
     };
     window.addEventListener('appinstalled', onInstalled);
 
-    // iOS Safari never fires beforeinstallprompt — show a hint after a short delay
-    // (only on first visit-ish to avoid annoying repeat users).
+    // iOS Safari never fires beforeinstallprompt — show a hint a little after
+    // the 2-minute eligibility threshold (whichever is later).
     let iosTimer: number | undefined;
     if (isIOS() && !isStandalone()) {
       iosTimer = window.setTimeout(() => {
-        setIosHint(true);
-        setVisible(true);
-      }, 4000);
+        maybeShow('ios');
+      }, Math.max(delay, 4000));
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', onBeforeInstall);
       window.removeEventListener('appinstalled', onInstalled);
       if (iosTimer) window.clearTimeout(iosTimer);
+      if (eligibleTimer) window.clearTimeout(eligibleTimer);
     };
   }, []);
 
@@ -118,7 +160,7 @@ export function InstallPrompt() {
       className={'install-prompt' + (closing ? ' closing' : '')}
       role="dialog"
       aria-live="polite"
-      aria-label="Install xstitch"
+      aria-label="Install Cozy Cross Stitch"
     >
       <div className="install-prompt-icon" aria-hidden="true">
         <svg viewBox="0 0 64 64" width="40" height="40">
@@ -137,14 +179,14 @@ export function InstallPrompt() {
         </svg>
       </div>
       <div className="install-prompt-body">
-        <div className="install-prompt-title">Install xstitch</div>
+        <div className="install-prompt-title">Install Cozy Cross Stitch</div>
         {iosHint && !deferred ? (
           <div className="install-prompt-text">
             Tap <Share size={14} aria-label="Share" style={{ verticalAlign: '-2px' }} /> then{' '}
             <strong>
               Add to Home Screen <Plus size={12} style={{ verticalAlign: '-1px' }} />
             </strong>{' '}
-            to keep xstitch one tap away — works offline.
+            to keep Cozy Cross Stitch one tap away — works offline.
           </div>
         ) : (
           <div className="install-prompt-text">

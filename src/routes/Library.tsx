@@ -44,20 +44,7 @@ export function Library() {
 
       {items === null && <p className="muted">Loading…</p>}
 
-      {items && items.length === 0 && (
-        <div className="empty">
-          <Sparkles size={28} color="var(--mauve)" />
-          <h3 style={{ marginTop: '0.5rem' }}>No patterns yet</h3>
-          <p className="muted">
-            Upload a photo and craft your first cross stitch pattern.
-          </p>
-          <Link to="/create" className="btn btn-primary" style={{ marginTop: '0.75rem' }}>
-            <Plus size={18} /> Create one
-          </Link>
-        </div>
-      )}
-
-      {items && items.length > 0 && (
+      {items && (
         <div className="library-grid">
           {items.map((p) => {
             const pct = p.totalNonBlank === 0 ? 0 : Math.round((p.completed / p.totalNonBlank) * 100);
@@ -101,6 +88,23 @@ export function Library() {
               </article>
             );
           })}
+
+          <Link
+            to="/create"
+            className="card card-hover library-card library-card-create"
+            aria-label="Create your own pattern"
+          >
+            <div className="library-create-inner">
+              <Sparkles size={28} color="var(--mauve)" aria-hidden />
+              <h3 className="library-create-title">Create your own pattern</h3>
+              <p className="muted library-create-text">
+                Upload a photo and craft a brand new cross stitch.
+              </p>
+              <span className="btn btn-primary library-create-cta">
+                <Plus size={18} /> New pattern
+              </span>
+            </div>
+          </Link>
         </div>
       )}
 

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://theinsomnolent.github.io/xstitch/sitemap.xml
+Sitemap: https://theinsomnolent.github.io/CosyCrossStitch/sitemap.xml

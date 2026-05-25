@@ -1,13 +1,13 @@
-// xstitch service worker — app-shell cache with network-first navigation.
-const VERSION = 'xstitch-v1';
+// Cozy Cross Stitch service worker — app-shell cache with network-first navigation.
+const VERSION = 'ccs-v1';
 const ASSET_CACHE = `${VERSION}-assets`;
 const APP_SHELL = [
-  '/xstitch/',
-  '/xstitch/index.html',
-  '/xstitch/manifest.webmanifest',
-  '/xstitch/favicon.svg',
-  '/xstitch/icon.svg',
-  '/xstitch/icon-maskable.svg',
+  '/CosyCrossStitch/',
+  '/CosyCrossStitch/index.html',
+  '/CosyCrossStitch/manifest.webmanifest',
+  '/CosyCrossStitch/favicon.svg',
+  '/CosyCrossStitch/icon.svg',
+  '/CosyCrossStitch/icon-maskable.svg',
 ];
 
 self.addEventListener('install', (event) => {
@@ -47,7 +47,7 @@ self.addEventListener('fetch', (event) => {
         .catch(async () => {
           const cached = await caches.match(req);
           if (cached) return cached;
-          const shell = await caches.match('/xstitch/index.html');
+          const shell = await caches.match('/CosyCrossStitch/index.html');
           return shell || Response.error();
         }),
     );
